@@ -12,6 +12,20 @@ import numpy
 import matplotlib.pyplot as plt
 rng = numpy.random
 
+# tf.enable_resource_variables()
+graph = tf.get_default_graph()
+
+
+def inspect_graph(mark):
+    if mark is not None:
+        print("\n\n**{} len_graph_ops:{}".format(mark, len(graph.get_operations())))
+    for op in graph.get_operations():
+        print(op.name, op.type, op.values())
+    print("")
+
+
+inspect_graph("start")
+
 # Parameters
 learning_rate = 0.01
 training_epochs = 1000
@@ -41,8 +55,12 @@ cost = tf.reduce_sum(tf.pow(pred-Y, 2))/(2*n_samples)
 #  Note, minimize() knows to modify W and b because Variable objects are trainable=True by default
 optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
+inspect_graph("defined")
+
 # Initialize the variables (i.e. assign their default value)
 init = tf.global_variables_initializer()
+
+inspect_graph("before_session")
 
 # Start training
 with tf.Session() as sess:
@@ -52,11 +70,14 @@ with tf.Session() as sess:
 
     # Fit all training data
     for epoch in range(training_epochs):
+        # if epoch % 100 == 0:
+        #     print("e:{} x/y: {}/{}".format(epoch, train_X, train_Y))
         for (x, y) in zip(train_X, train_Y):
             sess.run(optimizer, feed_dict={X: x, Y: y})
 
         # Display logs per epoch step
         if (epoch+1) % display_step == 0:
+            inspect_graph("inside_session")
             c = sess.run(cost, feed_dict={X: train_X, Y:train_Y})
             print("Epoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(c), \
                 "W=", sess.run(W), "b=", sess.run(b))
