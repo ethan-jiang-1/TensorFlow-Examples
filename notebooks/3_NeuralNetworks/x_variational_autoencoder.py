@@ -35,11 +35,15 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 import tensorflow as tf
 
+import os
+if not os.path.isdir("logs"):
+    os.mkdir("logs")
 
 # %%
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+
 
 
 # %%
@@ -157,8 +161,8 @@ for i in range(1, num_steps+1):
         print('Step %i, Loss: %f' % (i, l))
 
     if i == 1:
-        writer = tf.summary.FileWriter("logs/", sess.graph)
-        print("#############################")
+        writer = tf.summary.FileWriter("logs/vae", sess.graph)
+        print("############################# tensorboard --logdir=logs/vae")
         print("tensorboard is ok to refresh")
 
 
@@ -175,8 +179,8 @@ with tf.name_scope("late_decoder"):
     decoder = tf.matmul(decoder, weights['decoder_out']) + biases['decoder_out']
     decoder = tf.nn.sigmoid(decoder)
 
-writer = tf.summary.FileWriter("logs/", sess.graph)
-print("#############################")
+writer = tf.summary.FileWriter("logs/vae", sess.graph)
+print("############################# tensorboard --logdir=logs/vae")
 print("tensorboard is ok to refresh again")
 
 # Building a manifold of generated digits

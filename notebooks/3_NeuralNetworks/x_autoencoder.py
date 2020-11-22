@@ -53,50 +53,62 @@ num_input = 784 # MNIST data input (img shape: 28*28)
 
 # ethan's change
 num_hidden_2 = 64  # 2nd layer num features (the latent dim)
-num_steps = 10000  # make it quicker
+num_steps = 30000  # make it quicker
 
 # tf Graph input (only pictures)
-X = tf.placeholder("float", [None, num_input])
+with tf.name_scope("input"):
+    X = tf.placeholder("float", [None, num_input])
 
-weights = {
-    'encoder_h1': tf.Variable(tf.random_normal([num_input, num_hidden_1])),
-    'encoder_h2': tf.Variable(tf.random_normal([num_hidden_1, num_hidden_2])),
-    'decoder_h1': tf.Variable(tf.random_normal([num_hidden_2, num_hidden_1])),
-    'decoder_h2': tf.Variable(tf.random_normal([num_hidden_1, num_input])),
-}
-biases = {
-    'encoder_b1': tf.Variable(tf.random_normal([num_hidden_1])),
-    'encoder_b2': tf.Variable(tf.random_normal([num_hidden_2])),
-    'decoder_b1': tf.Variable(tf.random_normal([num_hidden_1])),
-    'decoder_b2': tf.Variable(tf.random_normal([num_input])),
-}
+with tf.name_scope("weights"):
+    weights = {
+        'encoder_h1': tf.Variable(tf.random_normal([num_input, num_hidden_1])),
+        'encoder_h2': tf.Variable(tf.random_normal([num_hidden_1, num_hidden_2])),
+        'decoder_h1': tf.Variable(tf.random_normal([num_hidden_2, num_hidden_1])),
+        'decoder_h2': tf.Variable(tf.random_normal([num_hidden_1, num_input])),
+    }
+
+with tf.name_scope("biases"):
+    biases = {
+        'encoder_b1': tf.Variable(tf.random_normal([num_hidden_1])),
+        'encoder_b2': tf.Variable(tf.random_normal([num_hidden_2])),
+        'decoder_b1': tf.Variable(tf.random_normal([num_hidden_1])),
+        'decoder_b2': tf.Variable(tf.random_normal([num_input])),
+    }
 
 
 # %%
 # Building the encoder
-def encoder(x):
-    # Encoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
-                                   biases['encoder_b1']))
-    # Encoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
-                                   biases['encoder_b2']))
-    return layer_2
+with tf.name_scope("encoder"):
+    def encoder(x):
+        # Encoder Hidden layer with sigmoid activation #1
+        with tf.name_scope("ec_layer1"):
+            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
+                                        biases['encoder_b1']))
+        with tf.name_scope("ec_layer2"):
+            # Encoder Hidden layer with sigmoid activation #2
+            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
+                                        biases['encoder_b2']))
+        return layer_2
 
 
 # Building the decoder
-def decoder(x):
-    # Decoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
-                                   biases['decoder_b1']))
-    # Decoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
-                                   biases['decoder_b2']))
-    return layer_2
+with tf.name_scope("decoder"):
+    def decoder(x):
+        # Decoder Hidden layer with sigmoid activation #1
+        with tf.name_scope("dc_layer1"):
+            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
+                                        biases['decoder_b1']))
+        # Decoder Hidden layer with sigmoid activation #2
+        with tf.name_scope("dc_layer2"):
+            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
+                                        biases['decoder_b2']))
+        return layer_2
 
 # Construct model
-encoder_op = encoder(X)
-decoder_op = decoder(encoder_op)
+with tf.name_scope("encoder_op"):
+    encoder_op = encoder(X)
+with tf.name_scope("decoder_op"):
+    decoder_op = decoder(encoder_op)
 
 # Prediction
 y_pred = decoder_op
@@ -104,8 +116,10 @@ y_pred = decoder_op
 y_true = X
 
 # Define loss and optimizer, minimize the squared error
-loss = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
-optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(loss)
+with tf.name_scope("loss"):
+    loss = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+with tf.name_scope("optimizer"):
+    optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(loss)
 
 # Initialize the variables (i.e. assign their default value)
 init = tf.global_variables_initializer()
@@ -119,6 +133,15 @@ sess = tf.Session()
 # Run the initializer
 sess.run(init)
 
+
+print("############################# tensorboard --logdir=logs/ae")
+print("tensorboard is ok to refresh again")
+writer = tf.summary.FileWriter("logs/ae")
+writer.add_graph(sess.graph)
+# loss_ph = tf.random_normal(shape=[num_steps])
+# tf.summary.histogram('loss', loss_ph)
+# summ = tf.summary.merge_all()
+
 # Training
 for i in range(1, num_steps+1):
     # Prepare Data
@@ -130,6 +153,7 @@ for i in range(1, num_steps+1):
     # Display logs per step
     if i % display_step == 0 or i == 1:
         print('Step %i: Minibatch Loss: %f' % (i, l))
+        #writer.add_summary(l, global_step=i)
 
 
 # %%
@@ -152,6 +176,11 @@ for i in range(n):
     for j in range(n):
         # Draw the generated digits
         canvas_recon[i * 28:(i + 1) * 28, j * 28:(j + 1) * 28] = g[j].reshape([28, 28])
+
+    if i == 1:
+        writer.add_graph(sess.graph)
+        print("############################# tensorboard --logdir=logs/ae")
+        print("tensorboard is ok to refresh again")
 
 print("Orginal and Reconstructued Images")
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
