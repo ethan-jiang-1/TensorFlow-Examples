@@ -43,7 +43,10 @@ if not os.path.isdir("logs"):
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
-
+print("description of dataset of mnist")
+print("train examples:\t", mnist.train.num_examples)
+print("valdt examples:\t", mnist.validation.num_examples)
+print("test  examples:\t", mnist.test.num_examples)
 
 
 # %%
