@@ -58,7 +58,7 @@ batch_size = 64
 # Network Parameters
 image_dim = 784 # MNIST images are 28x28 pixels
 hidden_dim = 512
-latent_dim = 2
+latent_dim = 2  # mean and std in center
 
 # A custom initialization (see Xavier Glorot init)
 with tf.name_scope("glorot"):
@@ -97,15 +97,23 @@ with tf.name_scope("encoder"):
     encoder = tf.nn.tanh(encoder)
 
 with tf.name_scope("z_mean"):
+    # outout z_mean range from -1 to 1 as the activation function is tanh
     z_mean = tf.matmul(encoder, weights['z_mean']) + biases['z_mean']
 
 with tf.name_scope("z_std"):
+    # outout z_std range from -1 to 1 as the activation function is tanh
     z_std = tf.matmul(encoder, weights['z_std']) + biases['z_std']
 
 with tf.name_scope("sampler"):
     # Sampler: Normal (gaussian) random distribution
     eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0, name='epsilon')
-    z = z_mean + tf.exp(z_std / 2) * eps
+    # eps: gaussion randome number (middle is 0), standard devision is 1.0 ： the distrubtion roughly range from -2.58 to 2.58, 67% value are in -1 to 1
+    # tf.exp: y = e^x, i.e, then value range is: e^-1/2 (0.60) to e^1/2 (1.64)
+    # the combined range is 0.60*-2.58 to 1.64*2.58 : -1.55 - +4.1
+    z_std_normalized = tf.exp(z_std / 2) * eps    
+
+    # z_mean range from -1 to 1
+    z = z_mean + z_std_normalized
 
 with tf.name_scope("decoder"):
     # Building the decoder (with scope to re-use these layers later)
@@ -190,6 +198,9 @@ print("tensorboard is ok to refresh again")
 n = 20
 x_axis = np.linspace(-3, 3, n)
 y_axis = np.linspace(-3, 3, n)
+# it seems the -3, 3 are the center of a grouped number...although -3.5/3.5 have number, but these numbers are blurred
+#x_axis = np.linspace(-3.5, 3.5, n)
+#y_axis = np.linspace(-3.5, 3.5, n)
 print("the axies used for generate the fake mean/std inner laten images:")
 print("x_axis", x_axis)
 print("y_axis", y_axis)
