@@ -30,6 +30,9 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
+import os
+if not os.path.isdir("logs"):
+    os.mkdir("logs")
 
 # %%
 # Import MNIST data
