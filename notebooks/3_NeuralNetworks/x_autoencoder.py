@@ -51,6 +51,10 @@ num_hidden_1 = 256 # 1st layer num features
 num_hidden_2 = 128 # 2nd layer num features (the latent dim)
 num_input = 784 # MNIST data input (img shape: 28*28)
 
+# ethan's change
+num_hidden_2 = 64  # 2nd layer num features (the latent dim)
+num_steps = 10000  # make it quicker
+
 # tf Graph input (only pictures)
 X = tf.placeholder("float", [None, num_input])
 
@@ -154,6 +158,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
 fig.suptitle('Horizontally stacked subplots')
 ax1.imshow(canvas_orig, origin="upper", cmap="gray")
 ax2.imshow(canvas_recon, origin="upper", cmap="gray")
+plt.show()
 
 # print("Original Images")     
 # plt.figure(figsize=(n, n))
