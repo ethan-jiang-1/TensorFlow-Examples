@@ -187,17 +187,26 @@ print("tensorboard is ok to refresh again")
 n = 20
 x_axis = np.linspace(-3, 3, n)
 y_axis = np.linspace(-3, 3, n)
+print("the axies used for generate the fake mean/std inner laten images:")
+print("x_axis", x_axis)
+print("y_axis", y_axis)
 
+z_mus =[]
 canvas = np.empty((28 * n, 28 * n))
 for i, yi in enumerate(x_axis):
     for j, xi in enumerate(y_axis):
         z_mu = np.array([[xi, yi]] * batch_size)
+        z_mus.append(z_mu)
         x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
         canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = x_mean[0].reshape(28, 28)
+
 
 plt.figure(figsize=(8, 10))
 Xi, Yi = np.meshgrid(x_axis, y_axis)
 plt.imshow(canvas, origin="upper", cmap="gray")
 plt.show()
 
+print("Num of z_mus: ", len(z_mus))
+for i, z_mu in enumerate(z_mus):
+    print(i, z_mu.shape, "contain filled with (for conners): ", z_mu[0][0], z_mu[0][1], z_mu[63][0], z_mu[63][1])
 

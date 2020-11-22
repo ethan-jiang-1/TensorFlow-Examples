@@ -82,12 +82,10 @@ with tf.name_scope("encoder"):
     def encoder(x):
         # Encoder Hidden layer with sigmoid activation #1
         with tf.name_scope("ec_layer1"):
-            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
-                                        biases['encoder_b1']))
+            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']), biases['encoder_b1']))
         with tf.name_scope("ec_layer2"):
             # Encoder Hidden layer with sigmoid activation #2
-            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
-                                        biases['encoder_b2']))
+            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']), biases['encoder_b2']))
         return layer_2
 
 
@@ -96,12 +94,10 @@ with tf.name_scope("decoder"):
     def decoder(x):
         # Decoder Hidden layer with sigmoid activation #1
         with tf.name_scope("dc_layer1"):
-            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
-                                        biases['decoder_b1']))
+            layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']), biases['decoder_b1']))
         # Decoder Hidden layer with sigmoid activation #2
         with tf.name_scope("dc_layer2"):
-            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
-                                        biases['decoder_b2']))
+            layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']), biases['decoder_b2']))
         return layer_2
 
 # Construct model
